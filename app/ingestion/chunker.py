@@ -33,7 +33,7 @@ def chunk_documents(document :List[Dict[str,Any]], chunk_size : int = 500 , chun
 
         for idx , chunk in enumerate(raw_chunk,start = 1):
 
-            chunk_id = "{source_clean}_p{page_num}_c{idx}"
+            chunk_id = f"{source_clean}_p{page_num}_c{idx}"
 
             all_chunks.append({
                 "chunk_id":chunk_id,

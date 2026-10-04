@@ -1,6 +1,6 @@
 from app.ingestion.loader import load_pdf
 from app.ingestion.chunker import chunk_documents
-
+from app.retrieval.dense import DenseRetriever
 
 def test_pipeline():
 
@@ -14,12 +14,22 @@ def test_pipeline():
     chunks = chunk_documents(pages, chunk_size=300, chunk_overlap=30)
     print(f"Generated {len(chunks)} total chunks.")
 
+    print("\n--- . Initializing Dense Retriever & Qdrant ---")
+    retriever = DenseRetriever()
 
-    print("\n--- 3. Inspecting First Chunk Output ---")
-    first_chunk = chunks[0]
-    print(f"Chunk ID: {first_chunk['chunk_id']}")
-    print(f"Source:   {first_chunk['source']} (Page {first_chunk['page_number']})")
-    print(f"Text Preview:\n{first_chunk['chunk_text'][:150]}...\n")
+    print("\n--- . Indexing Chunks into Qdrant ---")
+    retriever.index_chunks(chunks)
 
+    print("\n--- . Executing Dense Vector Search ---")
+    query = "What is the main topic discussed in the document?"
+    results = retriever.search(query, top_k=2)
+
+
+
+    for i, res in enumerate(results, start=1):
+        print(f"\nResult #{i} (Score: {res['score']}):")
+        print(f"Source: {res['source']} (Page {res['page_number']})")
+        print(f"ID:     {res['chunk_id']}")
+        print(f"Text:   {res['text'][:150]}...")
 if __name__ == "__main__":
     test_pipeline()
