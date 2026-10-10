@@ -25,7 +25,7 @@ class DenseRetriever:
             print(f"Create Qdrant collection {self.collection_name}")
             self.client.create_collection(
                 collection_name =self.collection_name,
-                vector_config = VectorParams(
+                vectors_config = VectorParams(
                     size = 384,
                     distance = Distance.COSINE
                 )
@@ -74,23 +74,25 @@ class DenseRetriever:
         """
         query_vector = self.model.encode(query).tolist()
 
-        search_results = self.client.search(
+        search_results = self.client.query_points(
 
             collection_name = self.collection_name,
-            query_vector = query_vector,
+            query = query_vector,
             limit = top_k
             )
 
+        hits = getattr(search_results, "points", search_results)
         results = []
 
-        for hit in search_results:
+        for hit in hits:
+            payload = hit.payload or {}
             results.append(
                 {
-                    "chunk_id":hit.payload["chunk_id"],
+                    "chunk_id": payload.get("chunk_id"),
                     "score": round(hit.score,4),
-                    "text" : hit.payload["text"],
-                    "source": hit.payload["source"],
-                    "page_number": hit.payload["page_number"]
+                    "text" : payload.get("text"),
+                    "source": payload.get("source"),
+                    "page_number": payload.get("page_number")
                 }
             )
 
