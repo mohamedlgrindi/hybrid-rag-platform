@@ -1,7 +1,7 @@
 from app.ingestion.loader import load_pdf
 from app.ingestion.chunker import chunk_documents
 from app.retrieval.dense import DenseRetriever
-
+from app.retrieval.sparse import SparseRetriver
 def test_pipeline():
 
     file_path = "data/sample_docs/LLM_Observatory_Documentation.pdf"
@@ -31,5 +31,15 @@ def test_pipeline():
         print(f"Source: {res['source']} (Page {res['page_number']})")
         print(f"ID:     {res['chunk_id']}")
         print(f"Text:   {res['text'][:150]}...")
+
+
+    print("\n--- 4. Testing Sparse Retrieval (BM25) ---")
+    sparse = SparseRetriver()
+    sparse.index_chunks(chunks)
+    sparse_results = sparse.search("schéma en étoile", top_k=2)
+
+    print("\nTop Sparse Match:")
+    print(f"ID: {sparse_results[0]['chunk_id']} | Score: {sparse_results[0]['score']}")
+    print(f"Text: {sparse_results[0]['text'][:100]}...")
 if __name__ == "__main__":
     test_pipeline()
